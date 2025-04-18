@@ -8,26 +8,37 @@ class UserRegistrationScreen extends StatefulWidget {
 }
 
 class _UserRegistrationScreenState extends State<UserRegistrationScreen> {
+  final UserController _userController = UserController();
   final _formKey = GlobalKey<FormState>();
-  final _idController = TextEditingController();
+
   final _nameController = TextEditingController();
   final _passwordController = TextEditingController();
-  final UserController _userController = UserController();
+
+  int _nextId = 1;
 
   @override
   void initState() {
     super.initState();
-    _userController.loadUsers();
+    _loadUsers();
   }
 
-  void _saveUser() {
+  void _loadUsers() async {
+    await _userController.loadUsers();
+    setState(() {
+      if (_userController.users.isNotEmpty) {
+        _nextId = _userController.users.map((u) => u.id).reduce((a, b) => a > b ? a : b) + 1;
+      }
+    });
+  }
+
+  void _saveUser() async {
     if (_formKey.currentState!.validate()) {
-      final user = User(
-        id: int.parse(_idController.text),
+      final newUser = User(
+        id: _nextId,
         name: _nameController.text,
         password: _passwordController.text,
       );
-      _userController.addUser(user);
+      await _userController.addUser(newUser);
       Navigator.pop(context);
     }
   }
@@ -35,7 +46,7 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Register User')),
+      appBar: AppBar(title: Text('Novo Usuário')),
       body: Padding(
         padding: EdgeInsets.all(16.0),
         child: Form(
@@ -43,30 +54,21 @@ class _UserRegistrationScreenState extends State<UserRegistrationScreen> {
           child: Column(
             children: [
               TextFormField(
-                controller: _idController,
-                decoration: InputDecoration(labelText: 'ID'),
-                validator: (value) =>
-                    value!.isEmpty ? 'ID is required' : null,
-                keyboardType: TextInputType.number,
-              ),
-              TextFormField(
                 controller: _nameController,
-                decoration: InputDecoration(labelText: 'Name'),
-                validator: (value) =>
-                    value!.isEmpty ? 'Name is required' : null,
+                decoration: InputDecoration(labelText: 'Nome'),
+                validator: (value) => value == null || value.isEmpty ? 'Informe o nome' : null,
               ),
               TextFormField(
                 controller: _passwordController,
-                decoration: InputDecoration(labelText: 'Password'),
-                validator: (value) =>
-                    value!.isEmpty ? 'Password is required' : null,
+                decoration: InputDecoration(labelText: 'Senha'),
                 obscureText: true,
+                validator: (value) => value == null || value.isEmpty ? 'Informe a senha' : null,
               ),
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _saveUser,
-                child: Text('Save'),
-              ),
+                child: Text('Salvar'),
+              )
             ],
           ),
         ),

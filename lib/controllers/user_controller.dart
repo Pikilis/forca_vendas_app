@@ -8,11 +8,14 @@ class UserController {
 
   Future<void> loadUsers() async {
     final file = await _getFile('users.json');
-    if (await file.exists()) {
-      final contents = await file.readAsString();
-      final List<dynamic> json = jsonDecode(contents);
-      users = json.map((e) => User.fromJson(e)).toList();
+
+    if (!(await file.exists())) {
+      await file.writeAsString('[]'); // cria com lista vazia caso não exista
     }
+
+    final contents = await file.readAsString();
+    final List<dynamic> jsonList = jsonDecode(contents);
+    users = jsonList.map((e) => User.fromJson(e)).toList();
   }
 
   Future<void> saveUsers() async {
@@ -20,27 +23,27 @@ class UserController {
     await file.writeAsString(jsonEncode(users));
   }
 
-  bool validateUser(String name, String password) {
-    if (users.isEmpty && name == 'admin' && password == 'admin') return true;
-    return users.any((user) => user.name == name && user.password == password);
-  }
-
-  void addUser(User user) {
+  Future<void> addUser(User user) async {
     users.add(user);
-    saveUsers();
+    await saveUsers();
   }
 
-  void updateUser(int id, User updatedUser) {
+  Future<void> updateUser(int id, User updatedUser) async {
     final index = users.indexWhere((user) => user.id == id);
     if (index != -1) {
       users[index] = updatedUser;
-      saveUsers();
+      await saveUsers();
     }
   }
 
-  void deleteUser(int id) {
+  Future<void> deleteUser(int id) async {
     users.removeWhere((user) => user.id == id);
-    saveUsers();
+    await saveUsers();
+  }
+
+  bool validateUser(String name, String password) {
+    if (users.isEmpty && name == 'admin' && password == 'admin') return true;
+    return users.any((user) => user.name == name && user.password == password);
   }
 
   Future<File> _getFile(String filename) async {

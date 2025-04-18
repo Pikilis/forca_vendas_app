@@ -13,13 +13,23 @@ class _UserListScreenState extends State<UserListScreen> {
   @override
   void initState() {
     super.initState();
-    _userController.loadUsers();
+    _loadUsers();
+  }
+
+  void _loadUsers() async {
+    await _userController.loadUsers();
+    setState(() {});
+  }
+
+  void _deleteUser(int id) async {
+    await _userController.deleteUser(id);
+    _loadUsers();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Users')),
+      appBar: AppBar(title: Text('Usuários')),
       body: ListView.builder(
         itemCount: _userController.users.length,
         itemBuilder: (context, index) {
@@ -27,23 +37,9 @@ class _UserListScreenState extends State<UserListScreen> {
           return ListTile(
             title: Text(user.name),
             subtitle: Text('ID: ${user.id}'),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: Icon(Icons.edit),
-                  onPressed: () {
-                    // Implement edit functionality
-                  },
-                ),
-                IconButton(
-                  icon: Icon(Icons.delete),
-                  onPressed: () {
-                    _userController.deleteUser(user.id);
-                    setState(() {});
-                  },
-                ),
-              ],
+            trailing: IconButton(
+              icon: Icon(Icons.delete),
+              onPressed: () => _deleteUser(user.id),
             ),
           );
         },
@@ -53,7 +49,7 @@ class _UserListScreenState extends State<UserListScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => UserRegistrationScreen()),
-          ).then((_) => setState(() {}));
+          ).then((_) => _loadUsers());
         },
         child: Icon(Icons.add),
       ),
