@@ -7,12 +7,15 @@ class ClientController {
   List<Client> clients = [];
 
   Future<void> loadClients() async {
-    final file = await _getFile('clients.json');
-    if (await file.exists()) {
-      final contents = await file.readAsString();
-      final List<dynamic> json = jsonDecode(contents);
-      clients = json.map((e) => Client.fromJson(e)).toList();
-    }
+  final file = await _getFile('clients.json');
+
+  if (!(await file.exists())) {
+    await file.writeAsString('[]'); // cria com lista vazia
+  }
+
+    final contents = await file.readAsString();
+    final List<dynamic> jsonList = jsonDecode(contents);
+    clients = jsonList.map((e) => Client.fromJson(e)).toList();
   }
 
   Future<void> saveClients() async {
@@ -20,22 +23,22 @@ class ClientController {
     await file.writeAsString(jsonEncode(clients));
   }
 
-  void addClient(Client client) {
+  Future<void> addClient(Client client) async {
     clients.add(client);
-    saveClients();
+    await saveClients();
   }
 
-  void updateClient(int id, Client updatedClient) {
+  Future<void> updateClient(int id, Client updatedClient) async {
     final index = clients.indexWhere((client) => client.id == id);
     if (index != -1) {
       clients[index] = updatedClient;
-      saveClients();
+      await saveClients();
     }
   }
 
-  void deleteClient(int id) {
+  Future<void> deleteClient(int id) async {
     clients.removeWhere((client) => client.id == id);
-    saveClients();
+    await saveClients();
   }
 
   Future<File> _getFile(String filename) async {

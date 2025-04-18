@@ -10,11 +10,16 @@ class ClientListScreen extends StatefulWidget {
 class _ClientListScreenState extends State<ClientListScreen> {
   final ClientController _clientController = ClientController();
 
-  @override
-  void initState() {
-    super.initState();
-    _clientController.loadClients();
-  }
+@override
+void initState() {
+  super.initState();
+  _loadData();
+}
+
+void _loadData() async {
+  await _clientController.loadClients();
+  setState(() {}); // Agora ele atualiza a tela após carregar os dados
+}
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +58,7 @@ class _ClientListScreenState extends State<ClientListScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => ClientRegistrationScreen()),
-          ).then((_) => setState(() {}));
+          ).then((_) => _loadData());
         },
         child: Icon(Icons.add),
       ),
