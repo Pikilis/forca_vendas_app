@@ -16,10 +16,11 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    _userController.loadUsers();
+    _userController.loadUsers(); // você pode manter aqui se quiser cachear antes
   }
 
-  void _login() {
+  Future<void> _login() async {
+    await _userController.loadUsers(); // garante que os usuários foram carregados
     final name = _nameController.text;
     final password = _passwordController.text;
     if (_userController.validateUser(name, password)) {
